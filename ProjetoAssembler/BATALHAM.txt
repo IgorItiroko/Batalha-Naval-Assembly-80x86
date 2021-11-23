@@ -1,0 +1,97 @@
+PULA_LINHA MACRO 
+	PUSH CX		;Salva registradores
+	PUSH DX
+	MOV AH,2	;Printa 0Ah e 0Dh
+	MOV DL,10	;Procedimento para imprimir a linha
+	INT 21h		
+	MOV DL,13	
+	INT 21h
+	POP DX
+	POP CX
+	ENDM
+IMNUM MACRO CARAC
+	MOV AH,2	;Procedimento de macro para a
+	MOV DL,CARAC	;impressao de um numero 
+	ADD DL,30h
+	INT 21h
+	ENDM
+
+IMCARAC MACRO CARAC2
+	MOV AH,2	;Procedimento de macro para 
+	MOV DL,CARAC2	;imprimir um caractere
+	INT 21h
+	ENDM
+
+LIMPA_TELA MACRO
+	PUSH AX
+	MOV AH,0h	;Procedimento que limpa tela
+	MOV AL,7h	;Muda o modo de video para um modo qualquer
+	INT 10h		
+	MODO_VIDEO	;Retorna para o modo de video usado
+	POP AX
+	ENDM
+
+MOVE_CURSOR MACRO LINHA,COLUNA
+	PUSH CX		;Salva regs
+	MOV Ah,2h	;Macro que move o cursor de posicao
+	MOV DH,LINHA	;Comumente utilizado para retornar ele
+	MOV DL,COLUNA	;para a posicao inicial da tela em 0,0
+	MOV BH,0
+	INT 10h
+	POP CX		;Retorna regs
+	ENDM
+MSGX MACRO MSG
+	PUSH AX		;Salva regs
+	PUSH CX
+
+	MOV AH,9	;Imprime a mensagem 
+	LEA DX,MSG	;que e passada pelo parametro
+	INT 21h
+	
+	POP CX		;Retorna registradores	
+	POP AX
+	ENDM
+
+
+IM2NUM MACRO NUM
+	PUSH CX		;Salva regs
+	PUSH BX	
+
+	XOR AH,AH	;Macro para a impressao de 2 numeros
+	MOV AL,NUM	;O numero e passado por parametro
+	MOV BL,10	;Seta o BL para 10
+	DIV BL		;Divide o numero por BL
+	MOV DX,AX	;Manda o conteudo de AX para DX
+	ADD DL,30h	;Transforma DL em numero
+	MOV AH,2 
+	INT 21h		;Imprime o DL
+	MOV DL,DH	;Move o conteudo de DH para DL
+	ADD DL,30h	;Transforma o caractere em numero
+	MOV AH,2	;Imprime o caractere
+	INT 21h
+
+	POP CX		;Retorna regs
+	POP BX
+	ENDM
+COLETA_STRING MACRO DESTINO
+	LOCAL TOPO	;Avisa a existencia de labels dentro do macro
+	LOCAL BAIXO
+	LEA SI,DESTINO	;Manda o destino para SI
+TOPO:
+    	MOV AH,1	;Coleta um caractere
+    	INT 21h
+    	CMP AL,13	;Compara ele com <enter>
+    	JE BAIXO	;Caso ele seja finaliza o contador
+    	MOV [SI],AL	;manda o caractere coletado para a posicao em SI
+    	INC SI		;Incrementa SI, para apontar para a proxima posicao
+    	JMP TOPO	;Volta para o inicio ate que o usuario aperte enter
+BAIXO: ENDM
+
+MODO_VIDEO MACRO
+	MOV AX,4f02h	;Seta o modo de video para SVGA
+    	MOV BX,103h
+    	INT 10h
+	ENDM
+
+
+
